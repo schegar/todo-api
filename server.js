@@ -8,7 +8,7 @@ var todos = [];
 var todoNextId = 1;
 
 app.use(bodyParser.json());
-
+ 
 app.get("/", function(req, res) {
 	res.send("Todo API Root");
 });
@@ -28,7 +28,7 @@ app.get("/todos", function (req, res){
 		console.log("here");
 		filteredTodos = _.filter(filteredTodos, function(todo) {
 			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) !== -1;
-		})
+		});
 	}
 
 	res.send(filteredTodos);
@@ -75,7 +75,7 @@ app.delete("/todos/:id", function (req, res) {
 	} else {
 		return res.status(404).json({"error": "no todo found with that id"});
 	}	
-})
+});
 
 // PUT /todos/:id
 app.put("/todos/:id", function (req, res) {
