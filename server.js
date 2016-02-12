@@ -21,6 +21,8 @@ app.get("/todos", middleware.requireAuthentication, function(req, res){
 	var query = req.query;
 	var where = {};
 
+	//where.id = req.user.get("id");
+
 	if (query.hasOwnProperty("completed") && query.completed === "true") {
 		where.completed = true;
 	} else if (query.hasOwnProperty("completed") && query.completed === "false") {
@@ -32,7 +34,7 @@ app.get("/todos", middleware.requireAuthentication, function(req, res){
 		};
 	}
 
-	db.todo.findAll({where: where}).then(function (todos) {
+	req.user.getTodos({where: where}).then(function (todos) {
 		res.send(todos);
 	}, function (e) {
 		res.status(500).send();
@@ -43,7 +45,24 @@ app.get("/todos", middleware.requireAuthentication, function(req, res){
 app.get("/todos/:id", middleware.requireAuthentication, function (req, res) {
 	var todoId = parseInt(req.params.id);
 
-	db.todo.findById(todoId).then(function (todo) {
+	// req.user.getTodo(1).then(function (todo) {
+	// 	if (!!todo) {
+	// 		res.json(todo.toJSON());
+	// 	} else {
+	// 		res.status(404).send();
+	// 	}
+	// }, function (e) {
+	// 	res.status(500).send();
+	// });
+
+	console.log(req.user.get("id"));
+
+	db.todo.findOne({
+		where: {
+			id: todoId,
+			userId: req.user.get("id")
+		}
+	}).then(function (todo) {
 		if (!!todo) {
 			res.json(todo.toJSON());
 		} else {
@@ -52,7 +71,6 @@ app.get("/todos/:id", middleware.requireAuthentication, function (req, res) {
 	}, function (e) {
 		res.status(500).send();
 	});
-
 });
 
 // POST /todos
@@ -76,7 +94,8 @@ app.delete("/todos/:id", middleware.requireAuthentication, function (req, res) {
 
 	db.todo.destroy({
 		where: {
-			id: todoId
+			id: todoId,
+			userId: req.user.get("id")
 		}
 	}).then(function (rowsDeleted) {
 		if (rowsDeleted === 0) {
@@ -105,7 +124,12 @@ app.put("/todos/:id", middleware.requireAuthentication, function (req, res) {
 		attributes.description = body.description;
 	}
 
-	db.todo.findById(todoId).then(function (todo) {
+	db.todo.findOne({
+		where: {
+			id: todoId,
+			userId: req.user.get("id")
+		}
+	}).then(function (todo) {
 		if (todo) {
 			todo.update(attributes).then(function (todo) {
 				res.json(todo.toJSON());
@@ -150,7 +174,7 @@ app.post("/users/login", function (req, res) {
 
 })
 
-db.sequelize.sync({force: true}).then(function () {
+db.sequelize.sync().then(function () {
 	app.listen(PORT, function() {
 		console.log("Express listening on port " + PORT + " !");
 	});

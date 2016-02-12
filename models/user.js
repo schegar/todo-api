@@ -37,10 +37,8 @@ module.exports = function (sequelize, DataTypes) {
 	}, {
 		hooks: {
 			beforeValidate: function (user, options) {
-				console.log(typeof user.email);
 				if (typeof user.email === "string") {
 					user.email = user.email.toLowerCase();
-					console.log(user.email);
 				}
 			}
 		},
@@ -71,8 +69,6 @@ module.exports = function (sequelize, DataTypes) {
 						var decodedJWT = jwt.verify(token, "abcde");
 						var bytes = cryptojs.AES.decrypt(decodedJWT.token, "abc");
 						var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
-
-						console.log(tokenData.id);
 
 						user.findById(tokenData.id).then(function (user) {
 							if (user) {
